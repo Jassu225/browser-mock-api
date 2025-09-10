@@ -152,7 +152,7 @@ apiMock.get("/api/posts/:id?", (req) => {
 });
 
 // Wildcards
-apiMock.get("/api/*", (req) => {
+apiMock.get("/api/(.*)", (req) => {
   // Matches any path starting with /api/
 });
 ```
@@ -546,6 +546,10 @@ apiMock.post<CreateUserRequest>("/api/users", (req) => {
 - Node.js environments with fetch polyfill
 - Works with bundlers like Webpack, Vite, Rollup
 - Compatible with React, Vue, Angular, and vanilla JavaScript
+
+## Dependencies
+
+This package uses [path-to-regexp](https://github.com/pillarjs/path-to-regexp) version 6.x for flexible URL pattern matching and parameter extraction. This version provides excellent performance and supports all the routing patterns shown in the examples above.
 
 ## License
 
