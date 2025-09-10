@@ -1,6 +1,6 @@
 {
   "name": "browser-mock-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A comprehensive TypeScript library for intercepting and mocking fetch requests in browser environments. Features flexible routing, middleware support, stateful mocking, network delay simulation, and full TypeScript support for frontend development and testing.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
