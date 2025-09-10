@@ -318,11 +318,13 @@ Monitor request lifecycle for debugging and analytics:
 // Listen to all requests
 apiMock.on("ON_REQUEST", (req) => {
   console.log("Request received:", req.method, req.path);
+  // Note: req.params will be empty {} since path parsing hasn't occurred yet
 });
 
 // Listen to mocked responses
 apiMock.on("ON_MOCK", (req) => {
   console.log("Request mocked:", req.path);
+  // req.params is available here after route matching
 });
 
 // Listen to network requests (forwarded to real API)
@@ -333,6 +335,7 @@ apiMock.on("ON_NETWORK", (req) => {
 // Listen to all responses
 apiMock.on("ON_RESPONSE", (req, response) => {
   console.log("Response sent:", response.status, "for", req.path);
+  // req.params is available here
 });
 
 // Unsubscribe from events
@@ -340,6 +343,8 @@ const handler = (req) => console.log(req.path);
 apiMock.on("ON_REQUEST", handler);
 apiMock.off("ON_REQUEST", handler);
 ```
+
+**Important:** The `ON_REQUEST` event fires before route matching, so `req.params` will always be an empty object `{}`. Path parameters are only available in `ON_MOCK`, `ON_RESPONSE` events and route handlers after the URL has been matched against registered routes.
 
 ### Management & Debugging
 

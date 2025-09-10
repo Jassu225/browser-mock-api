@@ -2,11 +2,11 @@
  * Fetch Wrapper for intercepting and handling HTTP requests
  */
 
-import { RouteMatcher } from './route-matcher';
-import { RequestParser } from './request-parser';
-import { MiddlewarePipeline } from './middleware-pipeline';
-import { EventEmitter } from './event-emitter';
-import { MockRequest } from './types';
+import { RouteMatcher } from "./route-matcher";
+import { RequestParser } from "./request-parser";
+import { MiddlewarePipeline } from "./middleware-pipeline";
+import { EventEmitter } from "./event-emitter";
+import { MockRequest } from "./types";
 
 export class FetchWrapper {
   private originalFetch: typeof fetch;
@@ -61,7 +61,7 @@ export class FetchWrapper {
    * Wrapped fetch function that intercepts requests
    */
   private async wrappedFetch(
-    input: RequestInfo | URL, 
+    input: RequestInfo | URL,
     init?: RequestInit
   ): Promise<Response> {
     let mockRequest: MockRequest;
@@ -69,42 +69,56 @@ export class FetchWrapper {
     try {
       // Parse the request
       mockRequest = await RequestParser.parse(input, init);
-      
+
       // Emit ON_REQUEST event
-      this.eventEmitter.emit('ON_REQUEST', mockRequest);
+      this.eventEmitter.emit("ON_REQUEST", mockRequest);
 
       // Try to match against registered routes
-      const matchResult = this.routeMatcher.match(mockRequest.method, mockRequest.path);
+      const matchResult = this.routeMatcher.match(
+        mockRequest.method,
+        mockRequest.path
+      );
 
       if (matchResult) {
         // Update request with extracted parameters
-        const requestWithParams = RequestParser.createWithParams(mockRequest, matchResult.params);
-        
+        const requestWithParams = RequestParser.createWithParams(
+          mockRequest,
+          matchResult.params
+        );
+
         // Emit ON_MOCK event
-        this.eventEmitter.emit('ON_MOCK', requestWithParams);
+        this.eventEmitter.emit("ON_MOCK", requestWithParams);
 
         // Execute middleware pipeline and handler
         const response = await this.middlewarePipeline.execute(
           requestWithParams,
           async () => {
             try {
+              const responsePromise = matchResult.handler(requestWithParams);
               // Apply delay if specified
               if (matchResult.options.delay && matchResult.options.delay > 0) {
-                await this.delay(matchResult.options.delay);
+                const [result] = await Promise.all([
+                  responsePromise,
+                  this.delay(matchResult.options.delay),
+                ]);
+                return result;
               }
 
               // Execute the mock handler
-              return await matchResult.handler(requestWithParams);
+              return await responsePromise;
             } catch (handlerError) {
               // Return error response instead of throwing
               return new Response(
-                JSON.stringify({ 
-                  error: 'Handler error', 
-                  message: handlerError instanceof Error ? handlerError.message : 'Unknown error' 
+                JSON.stringify({
+                  error: "Handler error",
+                  message:
+                    handlerError instanceof Error
+                      ? handlerError.message
+                      : "Unknown error",
                 }),
-                { 
-                  status: 500, 
-                  headers: { 'Content-Type': 'application/json' } 
+                {
+                  status: 500,
+                  headers: { "Content-Type": "application/json" },
                 }
               );
             }
@@ -112,7 +126,7 @@ export class FetchWrapper {
         );
 
         // Emit ON_RESPONSE event
-        this.eventEmitter.emit('ON_RESPONSE', requestWithParams, response);
+        this.eventEmitter.emit("ON_RESPONSE", requestWithParams, response);
 
         return response;
       } else {
@@ -121,7 +135,10 @@ export class FetchWrapper {
       }
     } catch (error) {
       // If parsing fails or any other error, forward to original fetch
-      console.warn('Error in fetch wrapper, forwarding to original fetch:', error);
+      console.warn(
+        "Error in fetch wrapper, forwarding to original fetch:",
+        error
+      );
       return this.forwardToOriginalFetch(mockRequest!, input, init);
     }
   }
@@ -136,13 +153,13 @@ export class FetchWrapper {
   ): Promise<Response> {
     try {
       // Emit ON_NETWORK event
-      this.eventEmitter.emit('ON_NETWORK', mockRequest);
+      this.eventEmitter.emit("ON_NETWORK", mockRequest);
 
       // Call original fetch with preserved arguments
       const response = await this.originalFetch(originalInput, originalInit);
 
       // Emit ON_RESPONSE event
-      this.eventEmitter.emit('ON_RESPONSE', mockRequest, response);
+      this.eventEmitter.emit("ON_RESPONSE", mockRequest, response);
 
       return response;
     } catch (error) {
@@ -155,7 +172,7 @@ export class FetchWrapper {
    * Simulate network delay
    */
   private delay(milliseconds: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, milliseconds));
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
   }
 
   /**

@@ -1,16 +1,31 @@
 {
   "name": "browser-mock-api",
   "version": "1.0.0",
-  "description": "A TypeScript npm package for browser-based API mocking with fetch interception",
+  "description": "A comprehensive TypeScript library for intercepting and mocking fetch requests in browser environments. Features flexible routing, middleware support, stateful mocking, network delay simulation, and full TypeScript support for frontend development and testing.",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && tsc",
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
-    "clean": "rm -rf dist"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build && npm run test && npm run lint"
   },
   "keywords": [
     "mock",
@@ -18,10 +33,31 @@
     "fetch",
     "browser",
     "typescript",
-    "testing"
+    "testing",
+    "mocking",
+    "http",
+    "rest",
+    "frontend",
+    "development",
+    "jest",
+    "vitest",
+    "middleware",
+    "routing",
+    "interceptor"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jassu225/browser-mock-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jassu225/browser-mock-api/issues"
+  },
+  "homepage": "https://github.com/jassu225/browser-mock-api#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
