@@ -85,7 +85,6 @@ class ApiMock {
     handler: MockHandler<T>,
     options?: MockOptions
   ): void {
-    this.setup();
     this.routeMatcher.register("GET", path, handler, options);
   }
 
@@ -97,7 +96,6 @@ class ApiMock {
     handler: MockHandler<T>,
     options?: MockOptions
   ): void {
-    this.setup();
     this.routeMatcher.register("POST", path, handler, options);
   }
 
@@ -109,7 +107,6 @@ class ApiMock {
     handler: MockHandler<T>,
     options?: MockOptions
   ): void {
-    this.setup();
     this.routeMatcher.register("PUT", path, handler, options);
   }
 
@@ -121,7 +118,6 @@ class ApiMock {
     handler: MockHandler<T>,
     options?: MockOptions
   ): void {
-    this.setup();
     this.routeMatcher.register("PATCH", path, handler, options);
   }
 
@@ -133,7 +129,6 @@ class ApiMock {
     handler: MockHandler<T>,
     options?: MockOptions
   ): void {
-    this.setup();
     this.routeMatcher.register("DELETE", path, handler, options);
   }
 
@@ -141,7 +136,6 @@ class ApiMock {
    * Add middleware to the pipeline
    */
   use(middleware: Middleware): void {
-    this.setup();
     this.middlewarePipeline.use(middleware);
   }
 
