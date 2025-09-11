@@ -16,6 +16,10 @@ A comprehensive TypeScript library for intercepting and mocking fetch requests i
 - 🧪 **Test Friendly** - Easy setup/teardown for testing environments
 - 🔄 **Backward Compatible** - `setup()` method still available as alias
 
+## Dependencies
+
+This package uses [path-to-regexp](https://github.com/pillarjs/path-to-regexp/tree/f1253b47b347dcb909e3e80b0eb2649109e59894) version 6.x for flexible URL pattern matching and parameter extraction. This version provides excellent performance and supports all the routing patterns shown in the examples above.
+
 ## Installation
 
 ```bash
@@ -567,10 +571,6 @@ apiMock.post<CreateUserRequest>("/api/users", (req) => {
 - Node.js environments with fetch polyfill
 - Works with bundlers like Webpack, Vite, Rollup
 - Compatible with React, Vue, Angular, and vanilla JavaScript
-
-## Dependencies
-
-This package uses [path-to-regexp](https://github.com/pillarjs/path-to-regexp) version 6.x for flexible URL pattern matching and parameter extraction. This version provides excellent performance and supports all the routing patterns shown in the examples above.
 
 ## License
 
