@@ -37,9 +37,9 @@ class ApiMock {
   }
 
   /**
-   * Setup the mock system (initialize fetch wrapper)
+   * Enable the mock system (initialize fetch wrapper)
    */
-  setup(): void {
+  enable(): void {
     if (this.isInitialized) {
       return;
     }
@@ -56,13 +56,28 @@ class ApiMock {
   }
 
   /**
-   * Cleanup the mock system (restore original fetch and clear all data)
+   * Setup the mock system (alias for enable() - for backward compatibility)
+   * @deprecated Use enable() instead
    */
-  cleanup(): void {
+  setup(): void {
+    this.enable();
+  }
+
+  /**
+   * Disable the mock system (restore original fetch without clearing data)
+   */
+  disable(): void {
     if (this.isInitialized) {
       this.fetchWrapper.teardown();
       this.isInitialized = false;
     }
+  }
+
+  /**
+   * Cleanup the mock system (restore original fetch and clear all data)
+   */
+  cleanup(): void {
+    this.disable();
     // Clear all data as part of cleanup
     this.routeMatcher.clear();
     this.middlewarePipeline.clear();

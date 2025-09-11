@@ -4,7 +4,7 @@ A comprehensive TypeScript library for intercepting and mocking fetch requests i
 
 ## Features
 
-- 🚀 **Automatic Setup** - Activates automatically when registering routes or middleware
+- 🎛️ **Manual Control** - Enable/disable mocking programmatically with full control
 - 🎯 **Full HTTP Support** - GET, POST, PUT, PATCH, DELETE with TypeScript generics
 - 🛣️ **Flexible Routing** - Path-to-regexp patterns with parameter extraction
 - 🔧 **Response Builders** - JSON, text, HTML, empty, redirect, and error responses
@@ -14,6 +14,7 @@ A comprehensive TypeScript library for intercepting and mocking fetch requests i
 - 🔍 **Event System** - Monitor request lifecycle for debugging
 - 🎯 **TypeScript First** - Full type safety and IntelliSense support
 - 🧪 **Test Friendly** - Easy setup/teardown for testing environments
+- 🔄 **Backward Compatible** - `setup()` method still available as alias
 
 ## Installation
 
@@ -26,8 +27,8 @@ npm install browser-mock-api
 ```typescript
 import apiMock from "browser-mock-api";
 
-// 1. Activate the mock system
-apiMock.setup();
+// 1. Enable the mock system
+apiMock.enable();
 
 // 2. Register a simple GET endpoint
 apiMock.get("/api/users/:id", (req) => {
@@ -58,8 +59,11 @@ apiMock.post<CreateUser>("/api/users", (req) => {
 const user = await fetch("/api/users/123").then((res) => res.json());
 console.log(user); // { id: '123', name: 'John Doe', email: 'john@example.com' }
 
-// 5. Clean up when done (optional)
-apiMock.cleanup();
+// 5. Temporarily disable when done (preserves all data)
+apiMock.disable();
+
+// Or completely reset (removes all routes/data - rarely needed)
+// apiMock.cleanup();
 ```
 
 ## Setup & Activation
@@ -69,29 +73,39 @@ The mock system requires **manual activation** for full control over when fetch 
 ```typescript
 import apiMock from "browser-mock-api";
 
-// Always call setup() before registering routes or making requests
-apiMock.setup(); // 🔧 Required to activate mocking
+// Call enable() to activate fetch interception
+apiMock.enable(); // 🔧 Required to activate mocking
 
-// Now you can register routes and middleware
+// Register routes (can be done before or after enable())
 apiMock.get("/api/users", handler);
 apiMock.post("/api/users", handler);
 apiMock.use(middleware);
 apiMock.on("ON_REQUEST", handler);
 ```
 
-**Manual setup gives you:**
+**Manual activation gives you:**
 
 - **Full control** over when fetch interception starts and stops
 - **Predictable behavior** in testing environments
 - **No surprises** - mocking only happens when you explicitly enable it
 - **Easy debugging** - clear activation/deactivation points
 
-**Important cleanup method:**
+**Control methods:**
 
 ```typescript
-// Complete shutdown - restores original fetch and clears all data
-apiMock.cleanup(); // Disables mocking and removes routes, middleware, events, stores
+// Enable mocking (start intercepting fetch requests)
+apiMock.enable();
+
+// Disable mocking (stop intercepting, keep all data, routes and listeners intact)
+apiMock.disable();
+
+// ⚠️ Complete reset - removes ALL data and restores original fetch
+apiMock.cleanup(); // Unregisters routes, clears stores, removes listeners
 ```
+
+**Important:** Use `disable()` if you want to temporarily pause mocking and re-enable later. Only use `cleanup()` when you need to completely reset the mock system - it will **permanently remove all your registered routes, stored data, and event listeners**.
+
+**Backward Compatibility:** `apiMock.setup()` is still available as an alias for `apiMock.enable()`.
 
 ## API Reference
 
@@ -357,8 +371,8 @@ apiMock.off("ON_REQUEST", handler);
 Control and inspect the mock system:
 
 ```typescript
-// Activate mocking
-apiMock.setup();
+// Enable mocking
+apiMock.enable();
 
 // Check if mocking is active
 console.log(apiMock.isActive()); // true/false
@@ -369,31 +383,30 @@ console.log(apiMock.getRoutes());
 // Unregister specific routes
 apiMock.unregister("GET", "/api/users/:id");
 
-// Complete shutdown - disables mocking and clears all data
-apiMock.cleanup(); // Restores original fetch and removes all routes, middleware, events, stores
+// Temporarily disable mocking (preserves all data, routes and listeners)
+apiMock.disable();
+
+// Later, re-enable with all data intact
+apiMock.enable(); // All routes, middleware, stores still available
+
+// ⚠️ DESTRUCTIVE: Complete reset (rarely needed)
+apiMock.cleanup(); // Permanently removes ALL routes, middleware, events, stores
 ```
 
-**Note:** `cleanup()` is the only clearing method available. It completely shuts down the mock system and clears all registered data (routes, middleware, event listeners, and stores).
+**Control Methods:**
 
-## Testing Integration
+- `enable()` - Start intercepting fetch requests
+- `disable()` - **Temporarily** stop intercepting (keeps all data, routes and listeners intact for later re-enabling)
+- `cleanup()` - **Permanently** remove all data and restore original fetch
 
-Perfect for testing environments:
+**When to use each:**
 
-```typescript
-// Jest/Vitest setup
-beforeEach(() => {
-  apiMock.setup(); // Activate mocking for each test
+- **Most common:** `enable()` → register routes → `disable()` → `enable()` (cycle as needed)
+- **Rarely needed:** `cleanup()` - only for complete system reset or dynamic reconfiguration
+- **Testing:** Use `cleanup()` in `afterEach()` to ensure clean test isolation
 
-  // Register test-specific mocks
-  apiMock.get("/api/test-data", (req) => {
-    return apiMock.response.json({ test: true });
-  });
-});
-
-afterEach(() => {
-  apiMock.cleanup(); // Clean up and restore original fetch between tests
-});
-```
+**⚠️ Important about `cleanup()`:**
+`cleanup()` will **permanently delete** all your registered routes, middleware, event listeners, and stored data. If you just want to temporarily pause mocking and re-enable it later with the same configuration, use `disable()` instead. You generally don't need `cleanup()` unless you're dynamically reconfiguring the entire mock system.
 
 ## Advanced Examples
 
@@ -402,8 +415,8 @@ afterEach(() => {
 ```typescript
 import apiMock from "browser-mock-api";
 
-// Activate mocking
-apiMock.setup();
+// Enable mocking
+apiMock.enable();
 
 interface Todo {
   id: string;
@@ -466,8 +479,8 @@ apiMock.delete("/api/todos/:id", (req) => {
 ```typescript
 import apiMock from "browser-mock-api";
 
-// Activate mocking
-apiMock.setup();
+// Enable mocking
+apiMock.enable();
 
 const authStore = apiMock.createStore("auth", {
   users: [{ id: "1", email: "user@example.com", password: "password123" }],
@@ -521,8 +534,8 @@ Full TypeScript support with generics for request bodies:
 ```typescript
 import apiMock from "browser-mock-api";
 
-// Activate mocking
-apiMock.setup();
+// Enable mocking
+apiMock.enable();
 
 interface CreateUserRequest {
   name: string;

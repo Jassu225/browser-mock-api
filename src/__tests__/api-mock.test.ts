@@ -298,6 +298,50 @@ describe('ApiMock Singleton', () => {
     });
   });
 
+  describe('enable/disable methods', () => {
+    it('should enable mocking with enable() method', () => {
+      apiMock.cleanup(); // Start fresh
+      expect(apiMock.isActive()).toBe(false);
+      
+      apiMock.enable();
+      expect(apiMock.isActive()).toBe(true);
+    });
+
+    it('should disable mocking with disable() method while preserving data', () => {
+      apiMock.enable();
+      apiMock.get('/test', () => ResponseBuilder.json({}));
+      
+      expect(apiMock.isActive()).toBe(true);
+      expect(apiMock.getRoutes()).toHaveLength(1);
+      
+      apiMock.disable();
+      expect(apiMock.isActive()).toBe(false);
+      expect(apiMock.getRoutes()).toHaveLength(1); // Data preserved
+    });
+
+    it('should support setup() as backward compatible alias for enable()', () => {
+      apiMock.cleanup(); // Start fresh
+      expect(apiMock.isActive()).toBe(false);
+      
+      apiMock.setup(); // Should work as alias
+      expect(apiMock.isActive()).toBe(true);
+    });
+
+    it('should handle multiple enable/disable calls gracefully', () => {
+      apiMock.cleanup(); // Start fresh
+      
+      // Multiple enables should be safe
+      apiMock.enable();
+      apiMock.enable();
+      expect(apiMock.isActive()).toBe(true);
+      
+      // Multiple disables should be safe
+      apiMock.disable();
+      apiMock.disable();
+      expect(apiMock.isActive()).toBe(false);
+    });
+  });
+
   describe('type safety', () => {
     it('should support undefined request body type by default', () => {
       const handler = jest.fn().mockImplementation((req: MockRequest) => {
